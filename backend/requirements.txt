@@ -1,6 +1,7 @@
 Django==4.2.16
 djangorestframework==3.15.2
 django-filter==24.3
+djoser==2.3.4
 drf-extra-fields==3.7.0
 Pillow==12.0.0
 psycopg[binary]==3.2.13

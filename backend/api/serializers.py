@@ -1,11 +1,17 @@
 """Сериализаторы пользователей, рецептов и справочников Foodgram."""
 
-from django.contrib.auth.password_validation import validate_password
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
-from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
+from recipes.models import (
+    Favorite,
+    Ingredient,
+    Recipe,
+    RecipeIngredient,
+    ShoppingCart,
+    Tag,
+)
 from users.models import Subscription, User
 
 
@@ -40,42 +46,6 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
 
-class UserCreateSerializer(serializers.ModelSerializer):
-    """Проверяет данные и создаёт нового пользователя."""
-
-    password = serializers.CharField(write_only=True)
-
-    class Meta:
-        """Определяет поля регистрации пользователя."""
-
-        model = User
-        fields = (
-            "email",
-            "id",
-            "username",
-            "first_name",
-            "last_name",
-            "password",
-        )
-        read_only_fields = ("id",)
-
-    def validate_password(self, value):
-        """Проверяет пароль стандартными валидаторами Django."""
-
-        validate_password(value)
-        return value
-
-    def validate_email(self, value):
-        """Приводит адрес электронной почты к нижнему регистру."""
-
-        return value.lower()
-
-    def create(self, validated_data):
-        """Создаёт пользователя с безопасно сохранённым паролем."""
-
-        return User.objects.create_user(**validated_data)
-
-
 class AvatarSerializer(serializers.ModelSerializer):
     """Принимает и возвращает аватар пользователя."""
 
@@ -86,33 +56,6 @@ class AvatarSerializer(serializers.ModelSerializer):
 
         model = User
         fields = ("avatar",)
-
-
-class PasswordSerializer(serializers.Serializer):
-    """Проверяет данные для смены пароля пользователя."""
-
-    current_password = serializers.CharField()
-    new_password = serializers.CharField()
-
-    def validate_current_password(self, value):
-        """Проверяет совпадение текущего пароля."""
-
-        if not self.context["request"].user.check_password(value):
-            raise serializers.ValidationError("Неверный текущий пароль.")
-        return value
-
-    def validate_new_password(self, value):
-        """Проверяет надёжность нового пароля."""
-
-        validate_password(value, self.context["request"].user)
-        return value
-
-
-class TokenCreateSerializer(serializers.Serializer):
-    """Проверяет учётные данные для получения токена."""
-
-    email = serializers.EmailField()
-    password = serializers.CharField()
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -169,8 +112,8 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     ingredients = IngredientInRecipeSerializer(
         source="recipe_ingredients", many=True, read_only=True
     )
-    is_favorited = serializers.SerializerMethodField()
-    is_in_shopping_cart = serializers.SerializerMethodField()
+    is_favorited = serializers.BooleanField(read_only=True)
+    is_in_shopping_cart = serializers.BooleanField(read_only=True)
 
     class Meta:
         """Определяет поля полного представления рецепта."""
@@ -189,40 +132,19 @@ class RecipeReadSerializer(serializers.ModelSerializer):
             "cooking_time",
         )
 
-    def get_is_favorited(self, recipe):
-        """Проверяет наличие рецепта в избранном пользователя."""
 
-        annotated = getattr(recipe, "is_favorited_value", None)
-        if annotated is not None:
-            return annotated
-        request = self.context.get("request")
-        return bool(
-            request
-            and request.user.is_authenticated
-            and recipe.favorites.filter(user=request.user).exists()
-        )
-
-    def get_is_in_shopping_cart(self, recipe):
-        """Проверяет наличие рецепта в списке покупок."""
-
-        annotated = getattr(recipe, "is_in_shopping_cart_value", None)
-        if annotated is not None:
-            return annotated
-        request = self.context.get("request")
-        return bool(
-            request
-            and request.user.is_authenticated
-            and recipe.shopping_carts.filter(user=request.user).exists()
-        )
-
-
-class IngredientAmountSerializer(serializers.Serializer):
-    """Проверяет идентификатор и количество ингредиента."""
+class IngredientAmountSerializer(serializers.ModelSerializer):
+    """Проверяет ингредиент и его количество средствами модели."""
 
     id = serializers.PrimaryKeyRelatedField(
         source="ingredient", queryset=Ingredient.objects.all()
     )
-    amount = serializers.IntegerField(min_value=1)
+
+    class Meta:
+        """Определяет поля состава записываемого рецепта."""
+
+        model = RecipeIngredient
+        fields = ("id", "amount")
 
 
 class RecipeWriteSerializer(serializers.ModelSerializer):
@@ -235,7 +157,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     image = Base64ImageField(required=True)
 
     class Meta:
-        """Определяет обязательные поля записи рецепта."""
+        """Определяет поля записи рецепта."""
 
         model = Recipe
         fields = (
@@ -254,46 +176,31 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, attrs):
-        """Проверяет полноту данных при создании и обновлении."""
+        """Проверяет наличие и уникальность тегов и ингредиентов."""
 
-        required = ("ingredients", "tags", "name", "text", "cooking_time")
-        if "image" in self.initial_data and not self.initial_data["image"]:
-            raise serializers.ValidationError(
-                {"image": ["Изображение не может быть пустым."]}
-            )
-        if self.instance:
-            missing = [
-                field for field in required if field not in self.initial_data
-            ]
-            if missing:
-                raise serializers.ValidationError(
-                    {field: ["Обязательное поле."] for field in missing}
-                )
-        return attrs
+        errors = {}
+        for field in ("ingredients", "tags"):
+            if field not in self.initial_data:
+                errors[field] = ["Обязательное поле."]
+            elif not self.initial_data[field]:
+                errors[field] = ["Список не может быть пустым."]
+        if errors:
+            raise serializers.ValidationError(errors)
 
-    def validate_ingredients(self, value):
-        """Запрещает пустой список и повторение ингредиентов."""
-
-        if not value:
-            raise serializers.ValidationError(
-                "Добавьте хотя бы один ингредиент."
-            )
-        ids = [item["ingredient"].id for item in value]
-        if len(ids) != len(set(ids)):
-            raise serializers.ValidationError(
+        ingredients = attrs["ingredients"]
+        ingredient_ids = [item["ingredient"].id for item in ingredients]
+        if len(ingredient_ids) != len(set(ingredient_ids)):
+            errors["ingredients"] = [
                 "Ингредиенты не должны повторяться."
-            )
-        return value
+            ]
 
-    def validate_tags(self, value):
-        """Запрещает пустой список и повторение тегов."""
-
-        if not value:
-            raise serializers.ValidationError("Добавьте хотя бы один тег.")
-        ids = [tag.id for tag in value]
-        if len(ids) != len(set(ids)):
-            raise serializers.ValidationError("Теги не должны повторяться.")
-        return value
+        tags = attrs["tags"]
+        tag_ids = [tag.id for tag in tags]
+        if len(tag_ids) != len(set(tag_ids)):
+            errors["tags"] = ["Теги не должны повторяться."]
+        if errors:
+            raise serializers.ValidationError(errors)
+        return attrs
 
     @staticmethod
     def _set_ingredients(recipe, ingredients):
@@ -322,9 +229,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
         ingredients = validated_data.pop("ingredients")
         tags = validated_data.pop("tags")
-        for attribute, value in validated_data.items():
-            setattr(instance, attribute, value)
-        instance.save()
+        instance = super().update(instance, validated_data)
         instance.tags.set(tags)
         instance.recipe_ingredients.all().delete()
         self._set_ingredients(instance, ingredients)
@@ -333,6 +238,10 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """Возвращает записанный рецепт в формате для чтения."""
 
+        if not hasattr(instance, "is_favorited"):
+            instance.is_favorited = False
+        if not hasattr(instance, "is_in_shopping_cart"):
+            instance.is_in_shopping_cart = False
         return RecipeReadSerializer(instance, context=self.context).data
 
 
@@ -366,10 +275,106 @@ class UserWithRecipesSerializer(UserSerializer):
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
-    """Преобразует связь подписчика с автором."""
+    """Создаёт подписку и возвращает профиль выбранного автора."""
+
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
 
     class Meta:
-        """Определяет поля подписки."""
+        """Определяет участников подписки."""
 
         model = Subscription
         fields = ("user", "author")
+        validators = ()
+
+    def validate(self, attrs):
+        """Запрещает подписку на себя и повторную подписку."""
+
+        if attrs["user"] == attrs["author"]:
+            raise serializers.ValidationError(
+                {"errors": "Нельзя подписаться на себя."}
+            )
+        if Subscription.objects.filter(**attrs).exists():
+            raise serializers.ValidationError(
+                {"errors": "Подписка уже существует."}
+            )
+        return attrs
+
+    def create(self, validated_data):
+        """Сохраняет подписку с защитой от конкурентного дубля."""
+
+        try:
+            return super().create(validated_data)
+        except IntegrityError as error:
+            raise serializers.ValidationError(
+                {"errors": "Подписка уже существует."}
+            ) from error
+
+    def to_representation(self, instance):
+        """Возвращает автора в формате страницы подписок."""
+
+        return UserWithRecipesSerializer(
+            instance.author, context=self.context
+        ).data
+
+
+class UserRecipeRelationSerializer(serializers.ModelSerializer):
+    """Содержит общую логику избранного и списка покупок."""
+
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
+    duplicate_error = "Рецепт уже добавлен в список."
+
+    def validate(self, attrs):
+        """Запрещает повторное добавление рецепта в один список."""
+
+        if self.Meta.model.objects.filter(**attrs).exists():
+            raise serializers.ValidationError(
+                {"errors": self.duplicate_error}
+            )
+        return attrs
+
+    def create(self, validated_data):
+        """Сохраняет связь с защитой от конкурентного дубля."""
+
+        try:
+            return super().create(validated_data)
+        except IntegrityError as error:
+            raise serializers.ValidationError(
+                {"errors": self.duplicate_error}
+            ) from error
+
+    def to_representation(self, instance):
+        """Возвращает добавленный рецепт в кратком формате."""
+
+        return RecipeMinifiedSerializer(
+            instance.recipe, context=self.context
+        ).data
+
+
+class FavoriteSerializer(UserRecipeRelationSerializer):
+    """Создаёт и представляет запись избранного."""
+
+    duplicate_error = "Рецепт уже добавлен в избранное."
+
+    class Meta:
+        """Определяет поля записи избранного."""
+
+        model = Favorite
+        fields = ("user", "recipe")
+        validators = ()
+
+
+class ShoppingCartSerializer(UserRecipeRelationSerializer):
+    """Создаёт и представляет запись списка покупок."""
+
+    duplicate_error = "Рецепт уже добавлен в список покупок."
+
+    class Meta:
+        """Определяет поля записи списка покупок."""
+
+        model = ShoppingCart
+        fields = ("user", "recipe")
+        validators = ()

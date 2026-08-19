@@ -4,13 +4,23 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models import F, Q
 
+from .constants import EMAIL_MAX_LENGTH, USER_NAME_MAX_LENGTH
+
 
 class User(AbstractUser):
     """Расширяет пользователя Django обязательным email и аватаром."""
 
-    email = models.EmailField("Адрес электронной почты", unique=True)
-    first_name = models.CharField("Имя", max_length=150)
-    last_name = models.CharField("Фамилия", max_length=150)
+    email = models.EmailField(
+        "Адрес электронной почты",
+        max_length=EMAIL_MAX_LENGTH,
+        unique=True,
+    )
+    first_name = models.CharField(
+        "Имя", max_length=USER_NAME_MAX_LENGTH
+    )
+    last_name = models.CharField(
+        "Фамилия", max_length=USER_NAME_MAX_LENGTH
+    )
     avatar = models.ImageField(
         "Аватар", upload_to="users/", blank=True, null=True
     )

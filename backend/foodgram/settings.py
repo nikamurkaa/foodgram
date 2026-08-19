@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "django_filters",
+    "djoser",
     "users.apps.UsersConfig",
     "recipes.apps.RecipesConfig",
     "api.apps.ApiConfig",
@@ -120,5 +121,18 @@ REST_FRAMEWORK = {
         "django_filters.rest_framework.DjangoFilterBackend",
     ],
     "DEFAULT_PAGINATION_CLASS": "api.pagination.FoodgramPagination",
-    "EXCEPTION_HANDLER": "api.exceptions.foodgram_exception_handler",
+}
+
+DJOSER = {
+    "LOGIN_FIELD": "email",
+    "HIDE_USERS": False,
+    "LOGOUT_ON_PASSWORD_CHANGE": True,
+    "SERIALIZERS": {
+        "user": "api.serializers.UserSerializer",
+        "current_user": "api.serializers.UserSerializer",
+    },
+    "PERMISSIONS": {
+        "user": ("api.permissions.IsUserOrAdminOrReadOnly",),
+        "user_list": ("rest_framework.permissions.AllowAny",),
+    },
 }

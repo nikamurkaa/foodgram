@@ -4,16 +4,19 @@ import io
 from pathlib import Path
 from urllib.request import Request, urlopen
 
-from PIL import Image
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
+from PIL import Image
 
+from recipes.constants import (
+    IMAGE_DOWNLOAD_TIMEOUT,
+    MAX_IMAGE_SIZE,
+    PHOTO_URL_TEMPLATE,
+    PHOTO_WIDTH,
+)
 from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from users.models import User
-
-MAX_IMAGE_SIZE = 8 * 1024 * 1024
-PHOTO_URL = "https://unsplash.com/photos/{}/download?force=true&w=1400"
 
 TAGS = (
     ("Завтрак", "breakfast"),
@@ -342,11 +345,15 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(f"Загрузка фотографии {photo_id}...")
                 request = Request(
-                    PHOTO_URL.format(photo_id),
+                    PHOTO_URL_TEMPLATE.format(
+                        photo_id=photo_id, width=PHOTO_WIDTH
+                    ),
                     headers={"User-Agent": "Foodgram/1.0"},
                 )
                 try:
-                    with urlopen(request, timeout=30) as response:
+                    with urlopen(
+                        request, timeout=IMAGE_DOWNLOAD_TIMEOUT
+                    ) as response:
                         data = response.read(MAX_IMAGE_SIZE + 1)
                 except OSError as error:
                     raise CommandError(
