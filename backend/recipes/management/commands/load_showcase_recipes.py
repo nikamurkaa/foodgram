@@ -227,33 +227,49 @@ class Command(BaseCommand):
     help = "Заменяет демонстрационные рецепты витринными рецептами с фото"
 
     def add_arguments(self, parser):
-        """Добавляет путь к заранее загруженным изображениям."""
+        """Добавляет параметры источника изображений и области замены."""
 
         parser.add_argument(
             "--image-dir",
             type=Path,
             help="Каталог с JPEG-файлами, названными по ID фотографий",
         )
+        parser.add_argument(
+            "--replace-author",
+            choices=sorted({item["author"] for item in RECIPES}),
+            help="Заменить только рецепты указанного автора",
+        )
 
     def handle(self, *args, **options):
         """Проверяет ресурсы и атомарно создаёт витринные рецепты."""
 
-        users = self._get_users()
-        ingredients = self._get_ingredients()
-        images = self._load_images(options["image_dir"])
+        replace_author = options["replace_author"]
+        recipes = tuple(
+            item
+            for item in RECIPES
+            if replace_author is None or item["author"] == replace_author
+        )
+        users = self._get_users(recipes)
+        ingredients = self._get_ingredients(recipes)
+        images = self._load_images(options["image_dir"], recipes)
 
         with transaction.atomic():
-            old_recipes = list(Recipe.objects.all())
+            old_queryset = Recipe.objects.all()
+            if replace_author is not None:
+                old_queryset = old_queryset.filter(
+                    author__username=replace_author
+                )
+            old_recipes = list(old_queryset)
             for recipe in old_recipes:
                 if recipe.image:
                     recipe.image.delete(save=False)
-            Recipe.objects.all().delete()
+            old_queryset.delete()
 
             tags = {
                 slug: Tag.objects.get_or_create(name=name, slug=slug)[0]
                 for name, slug in TAGS
             }
-            for item in RECIPES:
+            for item in recipes:
                 recipe = Recipe(
                     author=users[item["author"]],
                     name=item["name"],
@@ -280,20 +296,20 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(
                 f"Удалено рецептов: {len(old_recipes)}. "
-                f"Создано рецептов: {len(RECIPES)}."
+                f"Создано рецептов: {len(recipes)}."
             )
         )
-        for item in RECIPES:
+        for item in recipes:
             self.stdout.write(
                 f'Фото: {item["photo_author"]} — '
                 f'https://unsplash.com/photos/{item["photo_id"]}'
             )
 
     @staticmethod
-    def _get_users():
+    def _get_users(recipes):
         """Возвращает авторов подборки или сообщает об их отсутствии."""
 
-        usernames = {item["author"] for item in RECIPES}
+        usernames = {item["author"] for item in recipes}
         users = User.objects.in_bulk(usernames, field_name="username")
         missing = usernames - users.keys()
         if missing:
@@ -303,11 +319,13 @@ class Command(BaseCommand):
         return users
 
     @staticmethod
-    def _get_ingredients():
+    def _get_ingredients(recipes):
         """Возвращает однозначные ингредиенты для всех рецептов."""
 
         names = {
-            name for item in RECIPES for name, _amount in item["ingredients"]
+            name
+            for item in recipes
+            for name, _amount in item["ingredients"]
         }
         ingredients = {}
         duplicates = set()
@@ -327,11 +345,11 @@ class Command(BaseCommand):
             )
         return ingredients
 
-    def _load_images(self, image_dir):
+    def _load_images(self, image_dir, recipes):
         """Читает локальные изображения или загружает их из Unsplash."""
 
         images = {}
-        for item in RECIPES:
+        for item in recipes:
             photo_id = item["photo_id"]
             if image_dir:
                 filename = image_dir / f"{photo_id}.jpg"

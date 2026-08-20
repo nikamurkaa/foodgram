@@ -9,6 +9,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 
 from api.pagination import FoodgramPagination
+from api.serializers import RecipeWriteSerializer
 from recipes.constants import (
     MAX_COOKING_TIME,
     MAX_INGREDIENT_AMOUNT,
@@ -220,6 +221,14 @@ class FoodgramAPITests(APITestCase):
             format="json",
         )
         self.assertEqual(duplicated.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_write_serializer_represents_instance_without_view(self):
+        """Проверяет представление рецепта без повторного запроса из view."""
+
+        data = RecipeWriteSerializer().to_representation(self.recipe)
+
+        self.assertFalse(data["is_favorited"])
+        self.assertFalse(data["is_in_shopping_cart"])
 
     def test_only_author_can_update_or_delete_recipe(self):
         """Проверяет запрет редактирования чужого рецепта."""

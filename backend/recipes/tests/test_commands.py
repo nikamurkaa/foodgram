@@ -7,6 +7,7 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
+from django.contrib.auth import authenticate
 from django.core.management import call_command
 from django.db import IntegrityError, transaction
 from django.test import TestCase, override_settings
@@ -63,6 +64,16 @@ class CommandAndConstraintTests(TestCase):
         self.assertTrue(review.is_superuser)
         self.assertTrue(review.check_password("review1admin"))
         self.assertEqual(review.recipes.count(), 4)
+        self.assertEqual(
+            authenticate(username="review", password="review1admin"),
+            review,
+        )
+        self.assertEqual(
+            authenticate(
+                email="review@admin.ru", password="review1admin"
+            ),
+            review,
+        )
 
     def test_database_constraints_reject_duplicates_and_self_subscription(
         self,

@@ -112,8 +112,10 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     ingredients = IngredientInRecipeSerializer(
         source="recipe_ingredients", many=True, read_only=True
     )
-    is_favorited = serializers.BooleanField(read_only=True)
-    is_in_shopping_cart = serializers.BooleanField(read_only=True)
+    is_favorited = serializers.BooleanField(read_only=True, default=False)
+    is_in_shopping_cart = serializers.BooleanField(
+        read_only=True, default=False
+    )
 
     class Meta:
         """Определяет поля полного представления рецепта."""
@@ -238,7 +240,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """Возвращает записанный рецепт в формате для чтения."""
 
-        instance = self.context["view"].get_queryset().get(pk=instance.pk)
         return RecipeReadSerializer(instance, context=self.context).data
 
 

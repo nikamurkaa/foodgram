@@ -109,6 +109,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "users.User"
+AUTHENTICATION_BACKENDS = ("users.backends.UsernameOrEmailBackend",)
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -132,7 +133,7 @@ DJOSER = {
         "current_user": "api.serializers.UserSerializer",
     },
     "PERMISSIONS": {
-        "user": ("api.permissions.IsUserOrAdminOrReadOnly",),
+        "user": ("api.permissions.IsUserOrReadOnly",),
         "user_list": ("rest_framework.permissions.AllowAny",),
     },
 }
