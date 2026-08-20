@@ -127,18 +127,6 @@ class Recipe(models.Model):
 
         return self.name
 
-    @classmethod
-    def generate_short_code(cls):
-        """Создаёт свободный случайный код для короткой ссылки."""
-
-        while True:
-            code = "".join(
-                secrets.choice(SHORT_CODE_ALPHABET)
-                for _ in range(SHORT_CODE_LENGTH)
-            )
-            if not cls.objects.filter(short_code=code).exists():
-                return code
-
     def save(self, *args, **kwargs):
         """Создаёт короткий код один раз и сохраняет рецепт."""
 
@@ -150,6 +138,18 @@ class Recipe(models.Model):
                     "short_code",
                 )
         return super().save(*args, **kwargs)
+
+    @classmethod
+    def generate_short_code(cls):
+        """Создаёт свободный случайный код для короткой ссылки."""
+
+        while True:
+            code = "".join(
+                secrets.choice(SHORT_CODE_ALPHABET)
+                for _ in range(SHORT_CODE_LENGTH)
+            )
+            if not cls.objects.filter(short_code=code).exists():
+                return code
 
 
 class RecipeIngredient(models.Model):

@@ -29,7 +29,7 @@ TAGS = (
 RECIPES = (
     {
         "name": "Воздушные панкейки с лесными ягодами",
-        "author": "chef1",
+        "author": "review",
         "photo_id": "yxZSAjyToP4",
         "photo_author": "Sam Moghadam Khamseh",
         "tags": ("breakfast", "dessert"),
@@ -54,7 +54,7 @@ RECIPES = (
     },
     {
         "name": "Хрустящий салат с авокадо",
-        "author": "chef2",
+        "author": "review",
         "photo_id": "r8A-FTlLY3c",
         "photo_author": "Jonathan Ybema",
         "tags": ("lunch", "vegetarian"),
@@ -77,7 +77,7 @@ RECIPES = (
     },
     {
         "name": "Тыквенный крем-суп с нежными сливками",
-        "author": "chef1",
+        "author": "review",
         "photo_id": "JELuDsF96tA",
         "photo_author": "Elena Leya",
         "tags": ("lunch", "vegetarian"),
@@ -100,7 +100,7 @@ RECIPES = (
     },
     {
         "name": "Паста с лососем в сливочном соусе",
-        "author": "chef2",
+        "author": "review",
         "photo_id": "sH5tnwlUbXc",
         "photo_author": "Brelyn Bashrum",
         "tags": ("lunch", "dinner"),
@@ -124,7 +124,7 @@ RECIPES = (
     },
     {
         "name": "Домашний бургер с говядиной и чеддером",
-        "author": "admin",
+        "author": "chef1",
         "photo_id": "T3_qI9VLc9o",
         "photo_author": "Victoria Shes",
         "tags": ("lunch", "dinner"),
@@ -196,7 +196,7 @@ RECIPES = (
     },
     {
         "name": "Клубничный чизкейк с голубикой",
-        "author": "admin",
+        "author": "chef1",
         "photo_id": "Qbuto9p3weY",
         "photo_author": "Karolina Grabowska",
         "tags": ("dessert",),

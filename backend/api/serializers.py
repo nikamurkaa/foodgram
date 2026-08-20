@@ -1,6 +1,6 @@
 """Сериализаторы пользователей, рецептов и справочников Foodgram."""
 
-from django.db import IntegrityError, transaction
+from django.db import transaction
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
@@ -238,10 +238,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """Возвращает записанный рецепт в формате для чтения."""
 
-        if not hasattr(instance, "is_favorited"):
-            instance.is_favorited = False
-        if not hasattr(instance, "is_in_shopping_cart"):
-            instance.is_in_shopping_cart = False
+        instance = self.context["view"].get_queryset().get(pk=instance.pk)
         return RecipeReadSerializer(instance, context=self.context).data
 
 
@@ -286,7 +283,6 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
         model = Subscription
         fields = ("user", "author")
-        validators = ()
 
     def validate(self, attrs):
         """Запрещает подписку на себя и повторную подписку."""
@@ -300,16 +296,6 @@ class SubscriptionSerializer(serializers.ModelSerializer):
                 {"errors": "Подписка уже существует."}
             )
         return attrs
-
-    def create(self, validated_data):
-        """Сохраняет подписку с защитой от конкурентного дубля."""
-
-        try:
-            return super().create(validated_data)
-        except IntegrityError as error:
-            raise serializers.ValidationError(
-                {"errors": "Подписка уже существует."}
-            ) from error
 
     def to_representation(self, instance):
         """Возвращает автора в формате страницы подписок."""
@@ -336,16 +322,6 @@ class UserRecipeRelationSerializer(serializers.ModelSerializer):
             )
         return attrs
 
-    def create(self, validated_data):
-        """Сохраняет связь с защитой от конкурентного дубля."""
-
-        try:
-            return super().create(validated_data)
-        except IntegrityError as error:
-            raise serializers.ValidationError(
-                {"errors": self.duplicate_error}
-            ) from error
-
     def to_representation(self, instance):
         """Возвращает добавленный рецепт в кратком формате."""
 
@@ -364,7 +340,6 @@ class FavoriteSerializer(UserRecipeRelationSerializer):
 
         model = Favorite
         fields = ("user", "recipe")
-        validators = ()
 
 
 class ShoppingCartSerializer(UserRecipeRelationSerializer):
@@ -377,4 +352,3 @@ class ShoppingCartSerializer(UserRecipeRelationSerializer):
 
         model = ShoppingCart
         fields = ("user", "recipe")
-        validators = ()

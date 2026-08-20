@@ -15,6 +15,7 @@ IMAGE = (
     "//9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNo"
     "AAAAggCByxOyYQAAAABJRU5ErkJggg=="
 )
+REVIEW_PASSWORD = "review1admin"
 
 
 class Command(BaseCommand):
@@ -24,14 +25,11 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **options):
-        """Создаёт пользователей, теги и по одному рецепту автора."""
+        """Создаёт пользователей, теги и семь рецептов для проверки."""
 
         user_password = os.getenv("DEMO_USER_PASSWORD")
-        admin_password = os.getenv("DEMO_ADMIN_PASSWORD")
-        if not user_password or not admin_password:
-            raise CommandError(
-                "Задайте DEMO_USER_PASSWORD и DEMO_ADMIN_PASSWORD."
-            )
+        if not user_password:
+            raise CommandError("Задайте DEMO_USER_PASSWORD.")
         ingredient = Ingredient.objects.order_by("id").first()
         if ingredient is None:
             raise CommandError("Сначала выполните load_ingredients.")
@@ -45,11 +43,11 @@ class Command(BaseCommand):
         ]
         users = (
             self._user(
-                "admin",
-                "admin@example.com",
-                "Администратор",
-                "Foodgram",
-                admin_password,
+                "review",
+                "review@admin.ru",
+                "Review",
+                "Admin",
+                REVIEW_PASSWORD,
                 is_staff=True,
                 is_superuser=True,
             ),
@@ -60,7 +58,8 @@ class Command(BaseCommand):
                 "chef2", "chef2@example.com", "Иван", "Кулинар", user_password
             ),
         )
-        for index, user in enumerate(users, start=1):
+        recipe_authors = (users[0],) * 4 + (users[1],) * 2 + (users[2],)
+        for index, user in enumerate(recipe_authors, start=1):
             recipe, _ = Recipe.objects.get_or_create(
                 author=user,
                 name=f"Демонстрационный рецепт {index}",

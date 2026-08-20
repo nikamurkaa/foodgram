@@ -50,14 +50,19 @@ class CommandAndConstraintTests(TestCase):
         Ingredient.objects.create(name="Сахар", measurement_unit="г")
         environment = {
             "DEMO_USER_PASSWORD": "DemoUserPass123",
-            "DEMO_ADMIN_PASSWORD": "DemoAdminPass123",
         }
         with patch.dict(os.environ, environment):
             call_command("seed_demo")
             call_command("seed_demo")
         self.assertEqual(User.objects.count(), 3)
-        self.assertEqual(Recipe.objects.count(), 3)
+        self.assertEqual(Recipe.objects.count(), 7)
         self.assertEqual(Tag.objects.count(), 3)
+        review = User.objects.get(username="review")
+        self.assertEqual(review.email, "review@admin.ru")
+        self.assertTrue(review.is_staff)
+        self.assertTrue(review.is_superuser)
+        self.assertTrue(review.check_password("review1admin"))
+        self.assertEqual(review.recipes.count(), 4)
 
     def test_database_constraints_reject_duplicates_and_self_subscription(
         self,

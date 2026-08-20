@@ -17,4 +17,10 @@ Foodgram — сервис для тех, кто любит готовить и �
 
 ## Сайт
 
-[Открыть Foodgram](https://kirta-security.ru)
+Домен развёрнутого проекта: [kirta-security.ru](https://kirta-security.ru).
+
+Админ-панель: [kirta-security.ru/admin/](https://kirta-security.ru/admin/)
+
+- логин: `review`;
+- пароль: `review1admin`;
+- email: `review@admin.ru`.

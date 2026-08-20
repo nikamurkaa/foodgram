@@ -7,6 +7,7 @@ from django.urls import reverse
 from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.response import Response
 
 from recipes.models import (
@@ -18,7 +19,6 @@ from recipes.models import (
     Tag,
 )
 from users.models import Subscription, User
-
 from .filters import IngredientFilter, RecipeFilter
 from .pagination import FoodgramPagination
 from .permissions import IsAuthorOrReadOnly
@@ -40,6 +40,35 @@ class UserViewSet(DjoserUserViewSet):
 
     queryset = User.objects.all()
     pagination_class = FoodgramPagination
+    lookup_value_regex = r"\d+"
+    http_method_names = ("get", "post", "put", "delete", "head", "options")
+    allowed_extra_actions = {
+        "avatar",
+        "me",
+        "set_password",
+        "subscribe",
+        "subscriptions",
+    }
+
+    @classmethod
+    def get_extra_actions(cls):
+        """Оставляет только предусмотренные спецификацией действия."""
+
+        return [
+            extra_action
+            for extra_action in super().get_extra_actions()
+            if extra_action.__name__ in cls.allowed_extra_actions
+        ]
+
+    def update(self, request, *args, **kwargs):
+        """Запрещает изменение профиля через детальный эндпоинт."""
+
+        raise MethodNotAllowed(request.method)
+
+    def destroy(self, request, *args, **kwargs):
+        """Запрещает удаление профиля через детальный эндпоинт."""
+
+        raise MethodNotAllowed(request.method)
 
     @action(
         detail=False,
