@@ -30,6 +30,7 @@ jobs:
         with:
           node-version: '22'
 
+      # Migration branches rebuild the lockfile from the new Vite dependency tree.
       - name: Refresh lockfile on Vite migration branches
         if: startsWith(github.ref_name, 'security-vite-migration-')
         working-directory: frontend
