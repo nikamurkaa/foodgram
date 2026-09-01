@@ -14,7 +14,6 @@ import Ingredients from "./ingredients";
 import Description from "./description";
 import cn from "classnames";
 import { useRouteMatch, useParams, useHistory } from "react-router-dom";
-import MetaTags from "react-meta-tags";
 import DefaultImage from "../../images/userpic-icon.jpg";
 import { useRecipe } from "../../utils/index.js";
 import api from "../../api";
@@ -91,14 +90,52 @@ const SingleCard = ({ loadItem, updateOrders }) => {
     is_in_shopping_cart,
   } = recipe;
 
+  useEffect(() => {
+    if (!name) {
+      return undefined;
+    }
+
+    const previousTitle = document.title;
+    const descriptionMeta = document.querySelector('meta[name="description"]');
+    const previousDescription = descriptionMeta?.getAttribute("content");
+    let ogTitleMeta = document.querySelector('meta[property="og:title"]');
+    const createdOgTitleMeta = !ogTitleMeta;
+
+    if (!ogTitleMeta) {
+      ogTitleMeta = document.createElement("meta");
+      ogTitleMeta.setAttribute("property", "og:title");
+      document.head.appendChild(ogTitleMeta);
+    }
+
+    const previousOgTitle = ogTitleMeta.getAttribute("content");
+    document.title = name;
+    descriptionMeta?.setAttribute("content", `Фудграм - ${name}`);
+    ogTitleMeta.setAttribute("content", name);
+
+    return () => {
+      document.title = previousTitle;
+
+      if (descriptionMeta) {
+        if (previousDescription === null) {
+          descriptionMeta.removeAttribute("content");
+        } else {
+          descriptionMeta.setAttribute("content", previousDescription);
+        }
+      }
+
+      if (createdOgTitleMeta) {
+        ogTitleMeta.remove();
+      } else if (previousOgTitle === null) {
+        ogTitleMeta.removeAttribute("content");
+      } else {
+        ogTitleMeta.setAttribute("content", previousOgTitle);
+      }
+    };
+  }, [name]);
+
   return (
     <Main>
       <Container>
-        <MetaTags>
-          <title>{name}</title>
-          <meta name="description" content={`Фудграм - ${name}`} />
-          <meta property="og:title" content={name} />
-        </MetaTags>
         <div className={styles["single-card"]}>
           <img
             src={image}
