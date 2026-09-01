@@ -1,5 +1,7 @@
-import { defineConfig, transformWithOxc } from 'vite';
+import { fileURLToPath, URL } from 'node:url';
+
 import react from '@vitejs/plugin-react';
+import { defineConfig, transformWithOxc } from 'vite';
 
 const transformJsxInJs = () => ({
   name: 'transform-jsx-in-js',
@@ -15,6 +17,13 @@ const transformJsxInJs = () => ({
 
 export default defineConfig({
   plugins: [transformJsxInJs(), react()],
+  resolve: {
+    alias: {
+      'react-meta-tags': fileURLToPath(
+        new URL('./src/components/meta-tags/index.js', import.meta.url),
+      ),
+    },
+  },
   server: {
     proxy: {
       '/api': 'http://localhost:8000',
