@@ -1,9 +1,9 @@
-FROM node:21.7.1-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 COPY frontend/package*.json ./
-RUN npm install
+RUN npm ci
 COPY frontend/ ./
 RUN npm run build
 
-CMD ["sh", "-c", "cp -r build /app/result_build/"]
+CMD ["sh", "-c", "mkdir -p /app/result_build && cp -r dist/. /app/result_build/"]
