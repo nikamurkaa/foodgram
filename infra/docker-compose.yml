@@ -36,7 +36,6 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
-      - "443:443"
     depends_on:
       - backend
       - frontend
@@ -46,8 +45,6 @@ services:
       - static_data:/var/html/static:ro
       - media_data:/var/html/media:ro
       - ../docs:/usr/share/nginx/docs:ro
-      - ./certbot/www:/var/www/certbot:ro
-      - /etc/letsencrypt:/etc/letsencrypt:ro
 
 volumes:
   postgres_data:
