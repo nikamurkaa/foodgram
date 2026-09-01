@@ -28,9 +28,10 @@ Foodgram позволяет пользователям публиковать р
 | Authentication | Djoser, Token Authentication |
 | Filtering | django-filter |
 | Database | PostgreSQL 16, psycopg 3 |
-| Frontend | React 17, React Router |
+| Frontend | React 17, React Router 5, Vite 8 |
 | Web server | Gunicorn, Nginx |
 | Infrastructure | Docker, Docker Compose, named volumes |
+| CI | GitHub Actions: frontend build и dependency audit |
 | API docs | OpenAPI 3, ReDoc |
 
 ## Backend-архитектура
@@ -170,6 +171,17 @@ python -m pip install -r requirements.txt
 flake8 .
 ```
 
+Frontend использует один package manager — npm. Для воспроизводимой сборки и security-проверки:
+
+```bash
+cd frontend
+npm ci
+npm run build
+npm audit --audit-level=high
+```
+
+Те же frontend-проверки автоматически выполняются в GitHub Actions при изменениях зависимостей, исходников frontend или его Dockerfile.
+
 Для функциональной проверки API в репозитории также есть [`postman_collection/`](postman_collection/).
 
 ## Структура проекта
@@ -177,7 +189,7 @@ flake8 .
 ```text
 foodgram/
 ├── backend/             # Django REST API
-├── frontend/            # React-приложение
+├── frontend/            # React + Vite приложение
 ├── infra/               # Docker Compose и Nginx
 ├── data/                # исходные данные ингредиентов
 ├── docs/                # OpenAPI/ReDoc
