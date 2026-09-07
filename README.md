@@ -20,6 +20,28 @@ Foodgram позволяет пользователям публиковать р
 - OpenAPI/ReDoc-документация;
 - Docker Compose для запуска frontend, backend, PostgreSQL и Nginx.
 
+## Интерфейс
+
+### Каталог рецептов
+
+![Foodgram — каталог рецептов](docs/assets/foodgram-recipes.webp)
+
+### Страница рецепта
+
+![Foodgram — страница рецепта](docs/assets/foodgram-recipe-detail.webp)
+
+### Создание рецепта
+
+![Foodgram — создание рецепта](docs/assets/foodgram-create-recipe.webp)
+
+### Избранное
+
+![Foodgram — избранное](docs/assets/foodgram-favorites.webp)
+
+### Список покупок
+
+![Foodgram — список покупок](docs/assets/foodgram-shopping-list.webp)
+
 ## Стек технологий
 
 | Компонент | Технологии |
