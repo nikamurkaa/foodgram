@@ -24,23 +24,23 @@ Foodgram позволяет пользователям публиковать р
 
 ### Каталог рецептов
 
-![Foodgram — каталог рецептов](docs/assets/foodgram-recipes.webp)
+![Foodgram — каталог рецептов](docs/assets/foodgram-recipes.png)
 
 ### Страница рецепта
 
-![Foodgram — страница рецепта](docs/assets/foodgram-recipe-detail.webp)
+![Foodgram — страница рецепта](docs/assets/foodgram-recipe-detail.png)
 
 ### Создание рецепта
 
-![Foodgram — создание рецепта](docs/assets/foodgram-create-recipe.webp)
+![Foodgram — создание рецепта](docs/assets/foodgram-create-recipe.png)
 
 ### Избранное
 
-![Foodgram — избранное](docs/assets/foodgram-favorites.webp)
+![Foodgram — избранное](docs/assets/foodgram-favorites.png)
 
 ### Список покупок
 
-![Foodgram — список покупок](docs/assets/foodgram-shopping-list.webp)
+![Foodgram — список покупок](docs/assets/foodgram-shopping-list.png)
 
 ## Стек технологий
 
