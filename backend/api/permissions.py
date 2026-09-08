@@ -3,6 +3,15 @@
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 
+class IsUserOrReadOnly(BasePermission):
+    """Разрешает изменять профиль только его владельцу."""
+
+    def has_object_permission(self, request, view, obj):
+        """Проверяет право пользователя на операцию с профилем."""
+
+        return request.method in SAFE_METHODS or obj == request.user
+
+
 class IsAuthorOrReadOnly(BasePermission):
     """Разрешает изменять объект только его автору."""
 
