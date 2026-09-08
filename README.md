@@ -193,7 +193,12 @@ python -m pip install -r requirements.txt
 flake8 .
 ```
 
+Для frontend нужен Node.js 22.12+ (или 20.19+); рекомендуем Node.js 22,
+как в Dockerfile и CI. Проверка версии: `node --version`.
+
 Frontend использует один package manager — npm. Для воспроизводимой сборки и security-проверки:
+
+Из корня репозитория (после backend вернитесь командой `cd ..`):
 
 ```bash
 cd frontend
@@ -224,3 +229,11 @@ foodgram/
 [Николь Журбенко](https://github.com/nikamurkaa)
 
 Проект выполнен в рамках курса **«Python-разработчик» Яндекс Практикума**.
+
+Backend-тесты с отдельной автоматически создаваемой PostgreSQL test-БД:
+
+```bash
+docker compose -f infra/docker-compose.yml exec backend python manage.py test api.tests recipes.tests
+```
+
+Команда выполняется из корня репозитория при работающих контейнерах.
