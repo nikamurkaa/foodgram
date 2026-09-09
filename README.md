@@ -211,6 +211,14 @@ npm audit --audit-level=high
 
 Для функциональной проверки API в репозитории также есть [`postman_collection/`](postman_collection/).
 
+Backend-тесты с отдельной автоматически создаваемой PostgreSQL test-БД:
+
+```bash
+docker compose -f infra/docker-compose.yml exec backend python manage.py test api.tests recipes.tests
+```
+
+Команда выполняется из корня репозитория при работающих контейнерах.
+
 ## Структура проекта
 
 ```text
@@ -229,11 +237,3 @@ foodgram/
 [Николь Журбенко](https://github.com/nikamurkaa)
 
 Проект выполнен в рамках курса **«Python-разработчик» Яндекс Практикума**.
-
-Backend-тесты с отдельной автоматически создаваемой PostgreSQL test-БД:
-
-```bash
-docker compose -f infra/docker-compose.yml exec backend python manage.py test api.tests recipes.tests
-```
-
-Команда выполняется из корня репозитория при работающих контейнерах.
