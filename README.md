@@ -234,8 +234,8 @@ foodgram/
 └── README.md
 ```
 
+The project was completed as part of the **Yandex Practicum Python Developer course**.
+
 ## Author
 
 [Nicole Zhurbenko](https://github.com/nikamurkaa)
-
-The project was completed as part of the **Yandex Practicum Python Developer course**.
