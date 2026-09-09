@@ -1,50 +1,52 @@
+**English** | [Русский](README.ru.md)
+
 # Foodgram
 
-Full-stack сервис для публикации рецептов и планирования покупок с REST API на **Django REST Framework**, React-интерфейсом и PostgreSQL.
+A full-stack recipe sharing and shopping planning service with a **Django REST Framework** REST API, a React interface, and PostgreSQL.
 
-Foodgram позволяет пользователям публиковать рецепты с фотографиями и ингредиентами, подписываться на авторов, сохранять понравившиеся блюда и формировать общий список покупок. Backend реализует пользовательскую модель, права доступа, фильтрацию, работу с изображениями и связанные пользовательские коллекции.
+Foodgram lets users publish recipes with photos and ingredients, follow authors, save favorite dishes, and generate a combined shopping list. The backend implements a custom user model, permissions, filtering, image handling, and related user collections.
 
-## Возможности
+## Features
 
-- регистрация и токен-аутентификация пользователей;
-- создание, редактирование и удаление собственных рецептов;
-- загрузка аватара и изображения рецепта;
-- теги и ингредиенты;
-- фильтрация рецептов по автору, тегам, избранному и списку покупок;
-- подписки на авторов;
-- избранные рецепты;
-- список покупок с автоматическим суммированием одинаковых ингредиентов;
-- выгрузка списка покупок в текстовом формате;
-- короткие ссылки на рецепты;
-- административная панель Django;
-- OpenAPI/ReDoc-документация;
-- Docker Compose для запуска frontend, backend, PostgreSQL и Nginx.
+- user registration and token authentication;
+- create, edit, and delete own recipes;
+- upload avatars and recipe images;
+- tags and ingredients;
+- filter recipes by author, tags, favorites, and shopping list;
+- follow authors;
+- favorite recipes;
+- shopping lists that automatically sum matching ingredients;
+- export shopping lists as text;
+- short recipe links;
+- Django admin panel;
+- OpenAPI/ReDoc documentation;
+- Docker Compose to run the frontend, backend, PostgreSQL, and Nginx.
 
-## Интерфейс
+## Interface
 
-### Каталог рецептов
+### Recipe catalog
 
-![Foodgram — каталог рецептов](docs/assets/foodgram-recipes.png)
+![Foodgram — recipe catalog](docs/assets/foodgram-recipes.png)
 
-### Страница рецепта
+### Recipe page
 
-![Foodgram — страница рецепта](docs/assets/foodgram-recipe-detail.png)
+![Foodgram — recipe page](docs/assets/foodgram-recipe-detail.png)
 
-### Создание рецепта
+### Creating a recipe
 
-![Foodgram — создание рецепта](docs/assets/foodgram-create-recipe.png)
+![Foodgram — creating a recipe](docs/assets/foodgram-create-recipe.png)
 
-### Избранное
+### Favorites
 
-![Foodgram — избранное](docs/assets/foodgram-favorites.png)
+![Foodgram — favorites](docs/assets/foodgram-favorites.png)
 
-### Список покупок
+### Shopping list
 
-![Foodgram — список покупок](docs/assets/foodgram-shopping-list.png)
+![Foodgram — shopping list](docs/assets/foodgram-shopping-list.png)
 
-## Стек технологий
+## Technology stack
 
-| Компонент | Технологии |
+| Component | Technologies |
 | --- | --- |
 | Backend | Python, Django 4.2, Django REST Framework 3.15 |
 | Authentication | Djoser, Token Authentication |
@@ -53,54 +55,54 @@ Foodgram позволяет пользователям публиковать р
 | Frontend | React 17, React Router 5, Vite 8 |
 | Web server | Gunicorn, Nginx |
 | Infrastructure | Docker, Docker Compose, named volumes |
-| CI | GitHub Actions: frontend build и dependency audit |
+| CI | GitHub Actions: frontend build and dependency audit |
 | API docs | OpenAPI 3, ReDoc |
 
-## Backend-архитектура
+## Backend architecture
 
 ```text
 backend/
 ├── api/        # serializers, views, filters, permissions, pagination
-├── recipes/    # рецепты, ингредиенты, теги и пользовательские списки
-├── users/      # пользовательская модель и подписки
-├── foodgram/   # настройки Django-проекта
+├── recipes/    # recipes, ingredients, tags, and user lists
+├── users/      # custom user model and subscriptions
+├── foodgram/   # Django project settings
 └── manage.py
 ```
 
-REST API построено на ViewSet/Serializer-подходе DRF. Для рецептов используется объектное разрешение `IsAuthorOrReadOnly`: читать данные могут все пользователи, а изменение и удаление разрешено только автору объекта.
+The REST API follows DRF's ViewSet/Serializer approach. Recipes use the object-level permission `IsAuthorOrReadOnly`: all users can read data, but only the object's author can modify or delete it.
 
-## Основные API-сценарии
+## Main API workflows
 
-| Сценарий | Endpoint |
+| Workflow | Endpoint |
 | --- | --- |
-| Рецепты | `/api/recipes/` |
-| Пользователи | `/api/users/` |
-| Теги | `/api/tags/` |
-| Ингредиенты | `/api/ingredients/` |
-| Подписки | `/api/users/subscriptions/` |
-| Избранное | `/api/recipes/{id}/favorite/` |
-| Список покупок | `/api/recipes/{id}/shopping_cart/` |
-| Скачать список покупок | `/api/recipes/download_shopping_cart/` |
-| Получить токен | `/api/auth/token/login/` |
+| Recipes | `/api/recipes/` |
+| Users | `/api/users/` |
+| Tags | `/api/tags/` |
+| Ingredients | `/api/ingredients/` |
+| Subscriptions | `/api/users/subscriptions/` |
+| Favorites | `/api/recipes/{id}/favorite/` |
+| Shopping list | `/api/recipes/{id}/shopping_cart/` |
+| Download shopping list | `/api/recipes/download_shopping_cart/` |
+| Obtain a token | `/api/auth/token/login/` |
 
-Полная OpenAPI-схема находится в [`docs/openapi-schema.yml`](docs/openapi-schema.yml). После запуска Docker-окружения ReDoc доступен по адресу `http://localhost/api/docs/`.
+The full OpenAPI schema is in [`docs/openapi-schema.yml`](docs/openapi-schema.yml). After starting the Docker environment, ReDoc is available at `http://localhost/api/docs/`.
 
-## Запуск через Docker Compose
+## Running with Docker Compose
 
-Клонируйте репозиторий:
+Clone the repository:
 
 ```bash
 git clone https://github.com/nikamurkaa/foodgram.git
 cd foodgram
 ```
 
-Создайте файл окружения:
+Create the environment file:
 
 ```bash
 cp infra/.env.example infra/.env
 ```
 
-Пример конфигурации:
+Example configuration:
 
 ```dotenv
 POSTGRES_DB=foodgram
@@ -114,52 +116,52 @@ ALLOWED_HOSTS=localhost,127.0.0.1
 DEMO_USER_PASSWORD=change-me
 ```
 
-Соберите и запустите сервисы:
+Build and start the services:
 
 ```bash
 docker compose -f infra/docker-compose.yml up -d --build
 ```
 
-Проверьте состояние контейнеров:
+Check container status:
 
 ```bash
 docker compose -f infra/docker-compose.yml ps
 ```
 
-После запуска интерфейс доступен по адресу `http://localhost`, API — по `http://localhost/api/`.
+After startup, the interface is available at `http://localhost` and the API at `http://localhost/api/`.
 
-Остановить проект:
+Stop the project:
 
 ```bash
 docker compose -f infra/docker-compose.yml down
 ```
 
-## Наполнение базы данных
+## Populating the database
 
-Загрузить ингредиенты:
+Load ingredients:
 
 ```bash
 docker compose -f infra/docker-compose.yml exec backend \
   python manage.py load_ingredients
 ```
 
-Создать демонстрационные данные:
+Create demonstration data:
 
 ```bash
 docker compose -f infra/docker-compose.yml exec backend \
   python manage.py seed_demo
 ```
 
-Для демонстрационной подборки рецептов также предусмотрена команда:
+A command is also provided to load a showcase recipe collection:
 
 ```bash
 docker compose -f infra/docker-compose.yml exec backend \
   python manage.py load_showcase_recipes
 ```
 
-## Примеры API
+## API examples
 
-Получить токен:
+Obtain a token:
 
 ```bash
 curl --request POST http://localhost/api/auth/token/login/ \
@@ -170,22 +172,22 @@ curl --request POST http://localhost/api/auth/token/login/ \
   }'
 ```
 
-Получить первую страницу рецептов:
+Retrieve the first page of recipes:
 
 ```bash
 curl 'http://localhost/api/recipes/?limit=5'
 ```
 
-Добавить рецепт в избранное:
+Add a recipe to favorites:
 
 ```bash
 curl --request POST http://localhost/api/recipes/1/favorite/ \
   --header 'Authorization: Token <auth_token>'
 ```
 
-## Проверка качества кода
+## Code quality checks
 
-Backend-зависимости устанавливаются из `backend/requirements.txt`.
+Backend dependencies are installed from `backend/requirements.txt`.
 
 ```bash
 cd backend
@@ -193,12 +195,12 @@ python -m pip install -r requirements.txt
 flake8 .
 ```
 
-Для frontend нужен Node.js 22.12+ (или 20.19+); рекомендуем Node.js 22,
-как в Dockerfile и CI. Проверка версии: `node --version`.
+The frontend requires Node.js 22.12+ (or 20.19+); Node.js 22 is recommended,
+as used in the Dockerfile and CI. Check the version with `node --version`.
 
-Frontend использует один package manager — npm. Для воспроизводимой сборки и security-проверки:
+The frontend uses a single package manager, npm. For a reproducible build and security check:
 
-Из корня репозитория (после backend вернитесь командой `cd ..`):
+From the repository root (return from the backend with `cd ..`):
 
 ```bash
 cd frontend
@@ -207,33 +209,33 @@ npm run build
 npm audit --audit-level=high
 ```
 
-Те же frontend-проверки автоматически выполняются в GitHub Actions при изменениях зависимостей, исходников frontend или его Dockerfile.
+The same frontend checks run automatically in GitHub Actions when dependencies, frontend source files, or its Dockerfile change.
 
-Для функциональной проверки API в репозитории также есть [`postman_collection/`](postman_collection/).
+The repository also includes [`postman_collection/`](postman_collection/) for functional API testing.
 
-Backend-тесты с отдельной автоматически создаваемой PostgreSQL test-БД:
+Backend tests with a separate, automatically created PostgreSQL test database:
 
 ```bash
 docker compose -f infra/docker-compose.yml exec backend python manage.py test api.tests recipes.tests
 ```
 
-Команда выполняется из корня репозитория при работающих контейнерах.
+Run the command from the repository root while the containers are running.
 
-## Структура проекта
+## Project structure
 
 ```text
 foodgram/
 ├── backend/             # Django REST API
-├── frontend/            # React + Vite приложение
-├── infra/               # Docker Compose и Nginx
-├── data/                # исходные данные ингредиентов
+├── frontend/            # React + Vite application
+├── infra/               # Docker Compose and Nginx
+├── data/                # ingredient source data
 ├── docs/                # OpenAPI/ReDoc
-├── postman_collection/  # ручная проверка API
+├── postman_collection/  # manual API testing
 └── README.md
 ```
 
-## Автор
+## Author
 
-[Николь Журбенко](https://github.com/nikamurkaa)
+[Nicole Zhurbenko](https://github.com/nikamurkaa)
 
-Проект выполнен в рамках курса **«Python-разработчик» Яндекс Практикума**.
+The project was completed as part of the **Yandex Practicum Python Developer course**.
